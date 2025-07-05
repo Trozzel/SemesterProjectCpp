@@ -1,16 +1,38 @@
 #include <iostream>
+#include <string>
+#include <iterator>
 
-// TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-int main() {
-    // TIP Press <shortcut actionId="RenameElement"/> when your caret is at the <b>lang</b> variable name to see how CLion can help you rename it.
-    auto lang = "C++";
-    std::cout << "Hello and welcome to " << lang << "!\n";
+#include "NDVector.h"
 
-    for (int i = 1; i <= 5; i++) {
-        // TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        std::cout << "i = " << i << std::endl;
-    }
+constexpr size_t ROWS = 4;
+constexpr double TIME_PERIOD = 30.0; // seconds
 
-    return 0;
-    // TIP See CLion help at <a href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>. Also, you can try interactive lessons for CLion by selecting 'Help | Learn IDE Features' from the main menu.
+int main(int argc, char** argv) {
+	std::string filename {"Data/play.txt"};
+	if (argc > 1) {
+		filename = argv[1];
+	}
+	else {
+		std::cout << "No file was passed. Using " << filename << std::endl;
+	}
+
+	auto p_ndvec = NDVector<ROWS>::from_basic_file(filename);
+
+	// Create a labmda function that interpolates between two values by the
+	// perior of 30 seconds.
+	auto f_interp = [=] (double n1, double n2) -> double {
+		return (n2 - n1) / TIME_PERIOD;
+	};
+
+	std::cout << "dims string: " << p_ndvec->dims() << "\n";
+
+	auto p_ndinterp = std::make_unique<NDVector<ROWS>>();
+	size_t vec_idx = 0;
+	for (const auto& argv : *p_ndvec) {
+		(*p_ndinterp)[vec_idx++] = win_fn(argv, 2, f_interp);
+	}
+
+	std::cout << "length of interpolated: " <<
+		std::distance((*p_ndvec)[0].begin(), (*p_ndvec)[0].end()) << "\n"; 
 }
+
